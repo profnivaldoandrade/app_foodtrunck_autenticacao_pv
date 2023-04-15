@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:app_foodtrunck/models/lista_produtos.dart';
 import 'package:app_foodtrunck/models/produto.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +16,7 @@ class _FormProdutoViewState extends State<FormProdutoView> {
   final _imgUrlFocuus = FocusNode();
   final _imgUrlController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final _formData = Map<String, Object>();
+  final _formData = <String, Object>{};
   List<TextEditingController> listController = [TextEditingController()];
 
   @override
