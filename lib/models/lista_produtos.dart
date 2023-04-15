@@ -1,10 +1,13 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:app_foodtrunck/data/dados_ficticio.dart';
 import 'package:app_foodtrunck/models/produto.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class ListaProdutos with ChangeNotifier {
+  final _baseUrl = 'https://foodtrunck-c34b6-default-rtdb.firebaseio.com';
   final List<Produto> _items = produtosFicticio;
 
   List<Produto> get items => [..._items];
@@ -37,7 +40,30 @@ class ListaProdutos with ChangeNotifier {
   }
 
   void addProduto(Produto produto) {
-    _items.add(produto);
+    final future = http.post(
+      Uri.parse('$_baseUrl/produtos.json'),
+      body: jsonEncode(
+        {
+          "titulo": produto.titulo,
+          "descricao": produto.descricao,
+          "ingredientes": produto.ingredientes,
+          "preco": produto.preco,
+          "imgUrl": produto.imgUrl,
+          "eFavorito": produto.eFavorito,
+        },
+      ),
+    );
+    future.then((resposta) {
+      final id = jsonDecode(resposta.body)['name'];
+      _items.add(Produto(
+          id: id,
+          titulo: produto.titulo,
+          descricao: produto.descricao,
+          ingredientes: produto.ingredientes,
+          preco: produto.preco,
+          imgUrl: produto.imgUrl,
+          eFavorito: produto.eFavorito));
+    });
     notifyListeners();
   }
 

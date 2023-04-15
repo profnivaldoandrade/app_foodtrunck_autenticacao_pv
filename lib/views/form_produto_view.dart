@@ -285,10 +285,7 @@ class _FormProdutoViewState extends State<FormProdutoView> {
                             'informe a Url',
                             style: Theme.of(context).textTheme.bodyLarge,
                           )
-                        : FittedBox(
-                            fit: BoxFit.cover,
-                            child: Image.network(_imgUrlController.text),
-                          ),
+                        : Image.network(_imgUrlController.text),
                   ),
                 ],
               ),
