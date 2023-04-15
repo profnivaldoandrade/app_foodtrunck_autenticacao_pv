@@ -151,6 +151,7 @@ class _FormProdutoViewState extends State<FormProdutoView> {
                   if (precoValido <= 0) {
                     return 'Informe um preço válido';
                   }
+                  return null;
                 },
               ),
               TextFormField(
