@@ -1,6 +1,7 @@
 import 'package:app_foodtrunck/components/app_drower.dart';
 import 'package:app_foodtrunck/components/grid_produto.dart';
 import 'package:app_foodtrunck/components/qtd_item_pedido.dart';
+import 'package:app_foodtrunck/models/lista_produtos.dart';
 import 'package:app_foodtrunck/models/pedido.dart';
 import 'package:app_foodtrunck/utils/app_routes.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,19 @@ class ProdutosGeralView extends StatefulWidget {
 
 class _ProdutosGeralViewState extends State<ProdutosGeralView> {
   bool _mostarApenasFavoritos = false;
+  bool _estaCarregando = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Provider.of<ListaProdutos>(context, listen: false)
+        .carregarProdutos()
+        .then((value) {
+      setState(() {
+        _estaCarregando = false;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +84,9 @@ class _ProdutosGeralViewState extends State<ProdutosGeralView> {
           ),
         ],
       ),
-      body: GridProduto(_mostarApenasFavoritos),
+      body: _estaCarregando
+          ? const Center(child: CircularProgressIndicator())
+          : GridProduto(_mostarApenasFavoritos),
       drawer: const AppDrawer(),
     );
   }

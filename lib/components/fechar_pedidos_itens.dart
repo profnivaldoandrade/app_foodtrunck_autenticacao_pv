@@ -25,7 +25,7 @@ class _FecharPedidoItensWidgetState extends State<FecharPedidoItensWidget> {
         children: [
           ListTile(
             title: Text(
-              'R\$ ${widget.pedido.tolal.toStringAsFixed(2)}',
+              'R\$ ${widget.pedido.total.toStringAsFixed(2)}',
               style: Theme.of(context).textTheme.bodySmall,
             ),
             subtitle: Text(

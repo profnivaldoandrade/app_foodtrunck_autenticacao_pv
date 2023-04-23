@@ -6,15 +6,11 @@ import 'package:app_foodtrunck/models/fechar_pedidos_itens.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-
 class PedidoView extends StatelessWidget {
- 
-
   const PedidoView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    
     final Pedido pedido = Provider.of(context);
     final items = pedido.items.values.toList();
     //final Uri fone = Uri.parse('whatsapp://send?phone=5519993732949&text=${pedido.totalItens}');
@@ -48,35 +44,59 @@ class PedidoView extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  TextButton(
-                    onPressed: () {
-                      Provider.of<FecharPedidoItens>(
-                        context,
-                        listen: false,
-                      ).addFecharPedido(pedido);
-                      //  _louchLink('http://www.globo.com');
-                     // launchUrl(fone);
-                      pedido.limpar();
-                    },
-                    style: TextButton.styleFrom(
-                      textStyle: TextStyle(
-                          color: Theme.of(context).colorScheme.primary),
-                    ),
-                    child: const Text('FECHAR PEDIDO'),
-                  )
+                  BotaoFecharPedido(pedido: pedido)
                 ],
               ),
             ),
           ),
           Expanded(
             child: ListView.builder(
-              itemBuilder: (ctx, i) =>
-                  ItemPedidoWidget(itemPedido: items[i]),
+              itemBuilder: (ctx, i) => ItemPedidoWidget(itemPedido: items[i]),
               itemCount: items.length,
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+class BotaoFecharPedido extends StatefulWidget {
+  const BotaoFecharPedido({
+    super.key,
+    required this.pedido,
+  });
+
+  final Pedido pedido;
+
+  @override
+  State<BotaoFecharPedido> createState() => _BotaoFecharPedidoState();
+}
+
+class _BotaoFecharPedidoState extends State<BotaoFecharPedido> {
+  bool _estaCarregando = false;
+  @override
+  Widget build(BuildContext context) {
+    return _estaCarregando
+        ? const CircularProgressIndicator()
+        : TextButton(
+            onPressed: widget.pedido.quantosItens == 0
+                ? null
+                : () async {
+                    setState(() => _estaCarregando = true);
+                    await Provider.of<FecharPedidoItens>(
+                      context,
+                      listen: false,
+                    ).addFecharPedido(widget.pedido);
+
+                    widget.pedido.limpar();
+                    setState(() => _estaCarregando = false);
+                  },
+            style: TextButton.styleFrom(
+              textStyle:
+                  TextStyle(color: Theme.of(context).colorScheme.primary),
+            ),
+            child: const Text('FECHAR PEDIDO'),
+          );
   }
 }

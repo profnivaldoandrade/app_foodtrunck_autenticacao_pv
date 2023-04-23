@@ -14,6 +14,7 @@ class ItemProduto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final msg = ScaffoldMessenger.of(context);
     return ListTile(
       leading: CircleAvatar(
         backgroundImage: NetworkImage(produto.imgUrl),
@@ -55,12 +56,20 @@ class ItemProduto extends StatelessWidget {
                       ),
                     ],
                   ),
-                ).then((value) {
+                ).then((value) async {
                   if (value ?? false) {
-                    Provider.of<ListaProdutos>(
-                      context,
-                      listen: false,
-                    ).removerProduto(produto);
+                    try {
+                      await Provider.of<ListaProdutos>(
+                        context,
+                        listen: false,
+                      ).removerProduto(produto);
+                    } catch (error) {
+                      msg.showSnackBar(
+                        SnackBar(
+                          content: Text(error.toString()),
+                        ),
+                      );
+                    }
                   }
                 });
               },

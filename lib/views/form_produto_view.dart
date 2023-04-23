@@ -19,6 +19,8 @@ class _FormProdutoViewState extends State<FormProdutoView> {
   final _formData = <String, Object>{};
   List<TextEditingController> listController = [TextEditingController()];
 
+  bool _estaCarregando = false;
+
   @override
   void initState() {
     super.initState();
@@ -71,7 +73,7 @@ class _FormProdutoViewState extends State<FormProdutoView> {
     return eUrlValida && eExtValida;
   }
 
-  void _submitForm() {
+  Future<void> _submitForm() async {
     final eValido = _formKey.currentState?.validate() ?? false;
 
     if (!eValido) {
@@ -84,9 +86,30 @@ class _FormProdutoViewState extends State<FormProdutoView> {
     }
     _formKey.currentState?.save();
 
-    Provider.of<ListaProdutos>(context, listen: false)
-        .salvarProduto(_formData, ingredientes);
-    Navigator.of(context).pop();
+    setState(() => _estaCarregando = true);
+
+    try {
+      await Provider.of<ListaProdutos>(context, listen: false)
+          .salvarProduto(_formData, ingredientes);
+      // ignore: use_build_context_synchronously
+      Navigator.of(context).pop();
+    } catch (error) {
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Ocorreu um erro'),
+          content: const Text('Verifique sua conexão'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            )
+          ],
+        ),
+      );
+    } finally {
+      setState(() => _estaCarregando = false);
+    }
   }
 
   @override
@@ -103,196 +126,206 @@ class _FormProdutoViewState extends State<FormProdutoView> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(15),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                initialValue: _formData['titulo']?.toString(),
-                decoration: const InputDecoration(
-                  labelText: 'Título',
-                  labelStyle: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
-                  errorStyle: TextStyle(fontSize: 15),
-                ),
-                textInputAction: TextInputAction.next,
-                onFieldSubmitted: (_) =>
-                    FocusScope.of(context).requestFocus(_precoFocus),
-                onSaved: (titulo) => _formData['titulo'] = titulo ?? '',
-                validator: (titulo) {
-                  if (titulo!.trim().isEmpty) {
-                    return 'Título é Obrigatorio';
-                  }
-                  if (titulo.trim().length < 3) {
-                    return 'Digite no Min 3 Caracteres';
-                  }
-
-                  return null;
-                },
-              ),
-              TextFormField(
-                initialValue: _formData['preco']?.toString(),
-                decoration: const InputDecoration(
-                  labelText: 'Preço',
-                  labelStyle: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
-                  errorStyle: TextStyle(fontSize: 15),
-                ),
-                textInputAction: TextInputAction.next,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                focusNode: _precoFocus,
-                onFieldSubmitted: (_) =>
-                    FocusScope.of(context).requestFocus(_descricaoFocus),
-                onSaved: (preco) =>
-                    _formData['preco'] = double.parse(preco ?? '0'),
-                validator: (preco) {
-                  final precoValido = double.tryParse(preco!) ?? -1;
-                  if (precoValido <= 0) {
-                    return 'Informe um preço válido';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                initialValue: _formData['descricao']?.toString(),
-                decoration: const InputDecoration(
-                  labelText: 'Descrição',
-                  labelStyle: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
-                ),
-                textInputAction: TextInputAction.next,
-                focusNode: _descricaoFocus,
-                keyboardType: TextInputType.multiline,
-                maxLines: 3,
-                onFieldSubmitted: (_) =>
-                    FocusScope.of(context).requestFocus(_descricaoFocus),
-                onSaved: (descricao) =>
-                    _formData['descricao'] = descricao ?? '',
-                validator: (descricao) {
-                  if (descricao!.trim().isEmpty) {
-                    return 'Descrição é Obrigatoria';
-                  }
-                  if (descricao.trim().length < 10) {
-                    return 'Digite no Min 10 Caracteres';
-                  }
-
-                  return null;
-                },
-              ),
-              ListView.builder(
-                shrinkWrap: true,
-                itemCount: listController.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 15),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            height: 60,
-                            alignment: Alignment.center,
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: listController[index],
-                                    autofocus: false,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Ingredientes',
-                                      labelStyle: TextStyle(
-                                          color: Color.fromARGB(255, 0, 0, 0)),
-                                    ),
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      listController
-                                          .add(TextEditingController());
-                                    });
-                                  },
-                                  icon: const Icon(Icons.add),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        index != 0
-                            ? GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    listController[index].clear();
-                                    listController[index].dispose();
-                                    listController.removeAt(index);
-                                  });
-                                },
-                                child: Icon(
-                                  Icons.delete,
-                                  color:
-                                      Theme.of(context).colorScheme.secondary,
-                                  size: 20,
-                                ),
-                              )
-                            : const SizedBox()
-                      ],
-                    ),
-                  );
-                },
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: TextFormField(
+      body: _estaCarregando
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(15),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  children: [
+                    TextFormField(
+                      initialValue: _formData['titulo']?.toString(),
                       decoration: const InputDecoration(
-                        labelText: 'Url da Imagem',
+                        labelText: 'Título',
                         labelStyle:
                             TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                         errorStyle: TextStyle(fontSize: 15),
                       ),
-                      textInputAction: TextInputAction.done,
-                      focusNode: _imgUrlFocuus,
-                      keyboardType: TextInputType.url,
-                      controller: _imgUrlController,
-                      onSaved: (imgUrl) => _formData['imgUrl'] = imgUrl ?? '',
-                      onFieldSubmitted: (_) => _submitForm(),
-                      validator: (imgUrl) {
-                        if (!eImgUrlValida(imgUrl!)) {
-                          return 'Informe uma Url vãlida';
+                      textInputAction: TextInputAction.next,
+                      onFieldSubmitted: (_) =>
+                          FocusScope.of(context).requestFocus(_precoFocus),
+                      onSaved: (titulo) => _formData['titulo'] = titulo ?? '',
+                      validator: (titulo) {
+                        if (titulo!.trim().isEmpty) {
+                          return 'Título é Obrigatorio';
+                        }
+                        if (titulo.trim().length < 3) {
+                          return 'Digite no Min 3 Caracteres';
+                        }
+
+                        return null;
+                      },
+                    ),
+                    TextFormField(
+                      initialValue: _formData['preco']?.toString(),
+                      decoration: const InputDecoration(
+                        labelText: 'Preço',
+                        labelStyle:
+                            TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+                        errorStyle: TextStyle(fontSize: 15),
+                      ),
+                      textInputAction: TextInputAction.next,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      focusNode: _precoFocus,
+                      onFieldSubmitted: (_) =>
+                          FocusScope.of(context).requestFocus(_descricaoFocus),
+                      onSaved: (preco) =>
+                          _formData['preco'] = double.parse(preco ?? '0'),
+                      validator: (preco) {
+                        final precoValido = double.tryParse(preco!) ?? -1;
+                        if (precoValido <= 0) {
+                          return 'Informe um preço válido';
                         }
                         return null;
                       },
                     ),
-                  ),
-                  Container(
-                    height: 100,
-                    width: 100,
-                    margin: const EdgeInsets.only(
-                      top: 10,
-                      left: 10,
+                    TextFormField(
+                      initialValue: _formData['descricao']?.toString(),
+                      decoration: const InputDecoration(
+                        labelText: 'Descrição',
+                        labelStyle:
+                            TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+                      ),
+                      textInputAction: TextInputAction.next,
+                      focusNode: _descricaoFocus,
+                      keyboardType: TextInputType.multiline,
+                      maxLines: 3,
+                      onFieldSubmitted: (_) =>
+                          FocusScope.of(context).requestFocus(_descricaoFocus),
+                      onSaved: (descricao) =>
+                          _formData['descricao'] = descricao ?? '',
+                      validator: (descricao) {
+                        if (descricao!.trim().isEmpty) {
+                          return 'Descrição é Obrigatoria';
+                        }
+                        if (descricao.trim().length < 10) {
+                          return 'Digite no Min 10 Caracteres';
+                        }
+
+                        return null;
+                      },
                     ),
-                    decoration: BoxDecoration(
-                        border: Border.all(
-                      color: Colors.grey,
-                      width: 1,
-                    )),
-                    alignment: Alignment.center,
-                    child: _imgUrlController.text.isEmpty
-                        ? Text(
-                            'informe a Url',
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          )
-                        : Image.network(_imgUrlController.text),
-                  ),
-                ],
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: listController.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 15),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  height: 60,
+                                  alignment: Alignment.center,
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextFormField(
+                                          controller: listController[index],
+                                          autofocus: false,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Ingredientes',
+                                            labelStyle: TextStyle(
+                                                color: Color.fromARGB(
+                                                    255, 0, 0, 0)),
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            listController
+                                                .add(TextEditingController());
+                                          });
+                                        },
+                                        icon: const Icon(Icons.add),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              index != 0
+                                  ? GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          listController[index].clear();
+                                          listController[index].dispose();
+                                          listController.removeAt(index);
+                                        });
+                                      },
+                                      child: Icon(
+                                        Icons.delete,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary,
+                                        size: 20,
+                                      ),
+                                    )
+                                  : const SizedBox()
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            decoration: const InputDecoration(
+                              labelText: 'Url da Imagem',
+                              labelStyle: TextStyle(
+                                  color: Color.fromARGB(255, 0, 0, 0)),
+                              errorStyle: TextStyle(fontSize: 15),
+                            ),
+                            textInputAction: TextInputAction.done,
+                            focusNode: _imgUrlFocuus,
+                            keyboardType: TextInputType.url,
+                            controller: _imgUrlController,
+                            onSaved: (imgUrl) =>
+                                _formData['imgUrl'] = imgUrl ?? '',
+                            onFieldSubmitted: (_) => _submitForm(),
+                            validator: (imgUrl) {
+                              if (!eImgUrlValida(imgUrl!)) {
+                                return 'Informe uma Url vãlida';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        Container(
+                          height: 100,
+                          width: 100,
+                          margin: const EdgeInsets.only(
+                            top: 10,
+                            left: 10,
+                          ),
+                          decoration: BoxDecoration(
+                              border: Border.all(
+                            color: Colors.grey,
+                            width: 1,
+                          )),
+                          alignment: Alignment.center,
+                          child: _imgUrlController.text.isEmpty
+                              ? Text(
+                                  'informe a Url',
+                                  style: Theme.of(context).textTheme.bodyLarge,
+                                )
+                              : Image.network(_imgUrlController.text),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

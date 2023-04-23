@@ -1,14 +1,13 @@
 import 'dart:convert';
 import 'dart:math';
-
-import 'package:app_foodtrunck/data/dados_ficticio.dart';
+import 'package:app_foodtrunck/execoes/http_execoes.dart';
 import 'package:app_foodtrunck/models/produto.dart';
+import 'package:app_foodtrunck/utils/app_constantes.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class ListaProdutos with ChangeNotifier {
-  final _baseUrl = 'https://foodtrunck-c34b6-default-rtdb.firebaseio.com';
-  final List<Produto> _items = produtosFicticio;
+  final List<Produto> _items = [];
 
   List<Produto> get items => [..._items];
   List<Produto> get itensFavoritos =>
@@ -18,11 +17,29 @@ class ListaProdutos with ChangeNotifier {
     return _items.length;
   }
 
-  void salvarProduto(Map<String, Object> dados, List ingredientes) {
+  Future<void> carregarProdutos() async {
+    _items.clear();
+    final resposta = await http.get(Uri.parse('${AppConstantes.PRODUTO_BASE_URL}.json'));
+    if (resposta.body == 'null') return;
+    Map<String, dynamic> dados = jsonDecode(resposta.body);
+    dados.forEach((produtoId, produtoDados) {
+      _items.add(
+        Produto(
+          id: produtoId,
+          titulo: produtoDados['titulo'],
+          descricao: produtoDados['descricao'],
+          ingredientes: produtoDados['ingredientes'],
+          preco: produtoDados['preco'],
+          imgUrl: produtoDados['imgUrl'],
+          eFavorito: produtoDados['eFavorito'],
+        ),
+      );
+    });
+    notifyListeners();
+  }
+
+  Future<void> salvarProduto(Map<String, Object> dados, List ingredientes) {
     bool temId = dados['id'] != null;
-
-    //final
-
     final produto = Produto(
       id: temId ? dados['id'] as String : Random().nextDouble().toString(),
       titulo: dados['titulo'] as String,
@@ -33,15 +50,15 @@ class ListaProdutos with ChangeNotifier {
     );
 
     if (temId) {
-      atualizarProduto(produto);
+      return atualizarProduto(produto);
     } else {
-      addProduto(produto);
+      return addProduto(produto);
     }
   }
 
-  void addProduto(Produto produto) {
-    final future = http.post(
-      Uri.parse('$_baseUrl/produtos.json'),
+  Future<void> addProduto(Produto produto) async {
+    final resposta = await http.post(
+      Uri.parse('${AppConstantes.PRODUTO_BASE_URL}.json'),
       body: jsonEncode(
         {
           "titulo": produto.titulo,
@@ -53,35 +70,62 @@ class ListaProdutos with ChangeNotifier {
         },
       ),
     );
-    future.then((resposta) {
-      final id = jsonDecode(resposta.body)['name'];
-      _items.add(Produto(
-          id: id,
-          titulo: produto.titulo,
-          descricao: produto.descricao,
-          ingredientes: produto.ingredientes,
-          preco: produto.preco,
-          imgUrl: produto.imgUrl,
-          eFavorito: produto.eFavorito));
-    });
+
+    final id = jsonDecode(resposta.body)['name'];
+    _items.add(Produto(
+      id: id,
+      titulo: produto.titulo,
+      descricao: produto.descricao,
+      ingredientes: produto.ingredientes,
+      preco: produto.preco,
+      imgUrl: produto.imgUrl,
+      eFavorito: produto.eFavorito,
+    ));
     notifyListeners();
   }
 
-  void atualizarProduto(Produto produto) {
+  Future<void> atualizarProduto(Produto produto) async {
     int index = _items.indexWhere((p) => p.id == produto.id);
 
     if (index >= 0) {
+      await http.patch(
+        Uri.parse('${AppConstantes.PRODUTO_BASE_URL}/${produto.id}.json'),
+        body: jsonEncode(
+          {
+            "titulo": produto.titulo,
+            "descricao": produto.descricao,
+            "ingredientes": produto.ingredientes,
+            "preco": produto.preco,
+            "imgUrl": produto.imgUrl,
+          },
+        ),
+      );
       _items[index] = produto;
       notifyListeners();
     }
+    return Future.value();
   }
 
-  void removerProduto(Produto produto) {
+  Future<void> removerProduto(Produto produto) async {
     int index = _items.indexWhere((p) => p.id == produto.id);
 
     if (index >= 0) {
-      _items.removeWhere((p) => p.id == produto.id);
+      final produto = _items[index];
+      _items.remove(produto);
       notifyListeners();
+
+      final resposta = await http.delete(
+        Uri.parse('${AppConstantes.PRODUTO_BASE_URL}/${produto.id}.json'),
+      );
+
+      if (resposta.statusCode >= 400) {
+        _items.insert(index, produto);
+        notifyListeners();
+        throw HttpExecoes(
+          msg: 'Não Foi Possivel excluir esse produto',
+          statusCode: resposta.statusCode,
+        );
+      }
     }
   }
 }
