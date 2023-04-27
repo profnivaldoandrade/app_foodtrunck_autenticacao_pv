@@ -3,6 +3,7 @@ import 'package:app_foodtrunck/models/fechar_pedidos_itens.dart';
 import 'package:app_foodtrunck/models/lista_produtos.dart';
 import 'package:app_foodtrunck/utils/app_routes.dart';
 import 'package:app_foodtrunck/views/form_produto_view.dart';
+import 'package:app_foodtrunck/views/login_view.dart';
 import 'package:app_foodtrunck/views/pedido_view.dart';
 import 'package:app_foodtrunck/views/fechar_pedido_view.dart';
 import 'package:app_foodtrunck/views/produto_detalhe_view.dart';
@@ -71,6 +72,7 @@ class MyApp extends StatelessWidget {
           AppRoutes.FECHAR_PEDIDO: (context) => const FecharPedidoView(),
           AppRoutes.PRODUTOS: (context) => const ProdutosView(),
           AppRoutes.PRODUTO_FORM: (context) => const FormProdutoView(),
+          AppRoutes.LOGIN: (context) => const LoginView(),
         },
       ),
     );
