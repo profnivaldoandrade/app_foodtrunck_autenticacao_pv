@@ -1,3 +1,4 @@
+import 'package:app_foodtrunck/models/autenticacao.dart';
 import 'package:app_foodtrunck/models/pedido.dart';
 import 'package:app_foodtrunck/models/fechar_pedidos_itens.dart';
 import 'package:app_foodtrunck/models/lista_produtos.dart';
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ListaProdutos()),
         ChangeNotifierProvider(create: (_) => Pedido()),
         ChangeNotifierProvider(create: (_) => FecharPedidoItens()),
+        ChangeNotifierProvider(create: (_) => Autenticacao()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
