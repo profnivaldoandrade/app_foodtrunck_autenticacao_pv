@@ -7,11 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class ListaProdutos with ChangeNotifier {
-  final List<Produto> _items = [];
+  String _token;
+  List<Produto> _items = [];
 
   List<Produto> get items => [..._items];
   List<Produto> get itensFavoritos =>
       _items.where((produto) => produto.eFavorito).toList();
+
+  ListaProdutos(this._token, this._items);
 
   int get quantosItens {
     return _items.length;
@@ -19,7 +22,8 @@ class ListaProdutos with ChangeNotifier {
 
   Future<void> carregarProdutos() async {
     _items.clear();
-    final resposta = await http.get(Uri.parse('${AppConstantes.PRODUTO_BASE_URL}.json'));
+    final resposta = await http
+        .get(Uri.parse('${AppConstantes.PRODUTO_BASE_URL}.json?auth=$_token'));
     if (resposta.body == 'null') return;
     Map<String, dynamic> dados = jsonDecode(resposta.body);
     dados.forEach((produtoId, produtoDados) {

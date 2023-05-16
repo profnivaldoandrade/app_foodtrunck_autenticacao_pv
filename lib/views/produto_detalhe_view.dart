@@ -104,7 +104,8 @@ class ProdutoDetalheView extends StatelessWidget {
                       ElevatedButton(
                         onPressed: () {
                           pedido.addItem(produto);
-                          Navigator.of(context).pushNamed(AppRoutes.HOME);
+                          Navigator.of(context)
+                              .pushNamed(AppRoutes.LOGIN_OU_HOME);
                         },
                         child: const Text('ADICIONAR NO PEDIDO'),
                       )

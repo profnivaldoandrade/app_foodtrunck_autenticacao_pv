@@ -3,6 +3,7 @@ import 'package:app_foodtrunck/models/pedido.dart';
 import 'package:app_foodtrunck/models/fechar_pedidos_itens.dart';
 import 'package:app_foodtrunck/models/lista_produtos.dart';
 import 'package:app_foodtrunck/utils/app_routes.dart';
+import 'package:app_foodtrunck/views/autenticacao_ou_home_view.dart';
 import 'package:app_foodtrunck/views/form_produto_view.dart';
 import 'package:app_foodtrunck/views/login_view.dart';
 import 'package:app_foodtrunck/views/pedido_view.dart';
@@ -10,7 +11,6 @@ import 'package:app_foodtrunck/views/fechar_pedido_view.dart';
 import 'package:app_foodtrunck/views/produto_detalhe_view.dart';
 import 'package:app_foodtrunck/views/produtos_view.dart';
 import 'package:flutter/material.dart';
-import 'package:app_foodtrunck/views/produtos_geral_view.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -24,10 +24,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ListaProdutos()),
+        ChangeNotifierProvider(create: (_) => Autenticacao()),
+        ChangeNotifierProxyProvider<Autenticacao, ListaProdutos>(
+          create: (_) => ListaProdutos('',[]),
+          update: (cxt, aut, anterior) {
+            return ListaProdutos(aut.token ?? '', anterior?.items ?? []);
+          },
+        ),
         ChangeNotifierProvider(create: (_) => Pedido()),
         ChangeNotifierProvider(create: (_) => FecharPedidoItens()),
-        ChangeNotifierProvider(create: (_) => Autenticacao()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -70,11 +75,10 @@ class MyApp extends StatelessWidget {
         routes: {
           AppRoutes.PRODUTO_DETALHES: (context) => const ProdutoDetalheView(),
           AppRoutes.PEDIDO: (context) => const PedidoView(),
-          AppRoutes.HOME: (context) => ProdutosGeralView(),
           AppRoutes.FECHAR_PEDIDO: (context) => const FecharPedidoView(),
           AppRoutes.PRODUTOS: (context) => const ProdutosView(),
           AppRoutes.PRODUTO_FORM: (context) => const FormProdutoView(),
-          AppRoutes.LOGIN: (context) => const LoginView(),
+          AppRoutes.LOGIN_OU_HOME: (context) => const AutenticacaoOuHomeView(),
         },
       ),
     );

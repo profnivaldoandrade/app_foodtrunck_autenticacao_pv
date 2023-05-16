@@ -4,8 +4,27 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class Autenticacao with ChangeNotifier {
-  static const _url =
-      'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCF805VMvrJu6SRVawzsCZ7txe60k3RRRg';
+  String? _token;
+  String? _email;
+  String? _uid;
+  DateTime? _expToken;
+
+  bool get estaAutenticado {
+    final estaAutenticado = _expToken?.isAfter(DateTime.now()) ?? false;
+    return _token != null && estaAutenticado;
+  }
+
+  String? get token {
+    return estaAutenticado ? _token : null;
+  }
+
+  String? get email {
+    return estaAutenticado ? _email : null;
+  }
+
+  String? get uid {
+    return estaAutenticado ? _uid : null;
+  }
 
   Future<void> _autenticacao(
       String email, String password, String urlFragmento) async {
@@ -23,11 +42,19 @@ class Autenticacao with ChangeNotifier {
     final body = jsonDecode(resposta.body);
 
     if (body['error'] != null) {
-      print(body);
       throw ExecoesAutenticacao(body['error']['message']);
-    }
+    } else {
+      _token = body['idToken'];
+      _email = body['email'];
+      _uid = body['localId'];
 
-    print(body);
+      _expToken = DateTime.now().add(
+        Duration(
+          seconds: int.parse(body['expiresIn'])
+        ),
+      );
+      notifyListeners();
+    }
   }
 
   Future<void> registrar(String email, String password) async {

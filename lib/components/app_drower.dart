@@ -19,7 +19,7 @@ class AppDrawer extends StatelessWidget {
             title: const Text('Food Trunck'),
             onTap: () {
               Navigator.of(context).pushReplacementNamed(
-                AppRoutes.HOME,
+                AppRoutes.LOGIN_OU_HOME,
               );
             },
           ),
