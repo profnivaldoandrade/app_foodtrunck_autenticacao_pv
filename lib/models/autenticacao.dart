@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:app_foodtrunck/execoes/execoes_autenticacao.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -18,7 +19,14 @@ class Autenticacao with ChangeNotifier {
         'returnSecureToken': true,
       }),
     );
-    print(jsonDecode(resposta.body));
+
+    final body = jsonDecode(resposta.body);
+
+    if (body['error'] != null){
+      throw ExecoesAutenticacao(body['erro']['massage']);
+    }
+
+    print(body);
   }
 
   Future<void> registrar(String email, String password) async {

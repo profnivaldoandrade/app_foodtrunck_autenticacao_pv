@@ -1,3 +1,4 @@
+import 'package:app_foodtrunck/execoes/execoes_autenticacao.dart';
 import 'package:app_foodtrunck/models/autenticacao.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,10 +17,27 @@ class _FormLoginState extends State<FormLogin> {
   final _formKey = GlobalKey<FormState>();
   bool _estaLogando = false;
   ModoLogin _modoLogin = ModoLogin.Login;
+
   final Map<String, String> _dadosLogin = {
     'email': '',
     'password': '',
   };
+
+  void _mostrarErroDialog(String msg) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Ocorreu um erro'),
+        content: Text(msg),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Fechar'),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _auternarModoLogin() {
     setState(() {
@@ -43,11 +61,18 @@ class _FormLoginState extends State<FormLogin> {
 
     Autenticacao autenticacao = Provider.of(context, listen: false);
 
-    if (_eLogin()) {
-      await autenticacao.login(_dadosLogin['email']!, _dadosLogin['password']!);
-    } else {
-      await autenticacao.registrar(
-          _dadosLogin['email']!, _dadosLogin['password']!);
+    try {
+      if (_eLogin()) {
+        await autenticacao.login(
+            _dadosLogin['email']!, _dadosLogin['password']!);
+      } else {
+        await autenticacao.registrar(
+            _dadosLogin['email']!, _dadosLogin['password']!);
+      }
+    } on ExecoesAutenticacao catch (error) {
+      _mostrarErroDialog(error.toString());
+    } catch (error) {
+      _mostrarErroDialog('Ocorreu um erro inesperado');
     }
     setState(() => _estaLogando = false);
   }
