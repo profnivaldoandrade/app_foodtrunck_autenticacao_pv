@@ -70,8 +70,10 @@ class _FormLoginState extends State<FormLogin> {
             _dadosLogin['email']!, _dadosLogin['password']!);
       }
     } on ExecoesAutenticacao catch (error) {
+      print(error);
       _mostrarErroDialog(error.toString());
     } catch (error) {
+      print(error);
       _mostrarErroDialog('Ocorreu um erro inesperado');
     }
     setState(() => _estaLogando = false);
