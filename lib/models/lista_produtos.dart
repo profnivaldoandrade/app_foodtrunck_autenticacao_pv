@@ -7,14 +7,19 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class ListaProdutos with ChangeNotifier {
-  String _token;
+  final String _token;
+  final String _userId;
   List<Produto> _items = [];
 
   List<Produto> get items => [..._items];
   List<Produto> get itensFavoritos =>
       _items.where((produto) => produto.eFavorito).toList();
 
-  ListaProdutos(this._token, this._items);
+  ListaProdutos([
+    this._token = '',
+    this._userId = '',
+    this._items = const [],
+  ]);
 
   int get quantosItens {
     return _items.length;
@@ -25,8 +30,18 @@ class ListaProdutos with ChangeNotifier {
     final resposta = await http
         .get(Uri.parse('${AppConstantes.PRODUTO_BASE_URL}.json?auth=$_token'));
     if (resposta.body == 'null') return;
+
+    final favResposta = await http.get(
+      Uri.parse(
+          '${AppConstantes.USUARIO_FAVORITO_URL}/$_userId.json?auth=$_token'),
+    );
+
+    Map<String, dynamic> dadosFavorito =
+        favResposta.body == 'null' ? {} : jsonDecode(favResposta.body);
+
     Map<String, dynamic> dados = jsonDecode(resposta.body);
     dados.forEach((produtoId, produtoDados) {
+      final eFavorito = dadosFavorito[produtoId] ?? false;
       _items.add(
         Produto(
           id: produtoId,
@@ -35,7 +50,7 @@ class ListaProdutos with ChangeNotifier {
           ingredientes: produtoDados['ingredientes'],
           preco: produtoDados['preco'],
           imgUrl: produtoDados['imgUrl'],
-          eFavorito: produtoDados['eFavorito'],
+          eFavorito: eFavorito,
         ),
       );
     });
@@ -70,7 +85,6 @@ class ListaProdutos with ChangeNotifier {
           "ingredientes": produto.ingredientes,
           "preco": produto.preco,
           "imgUrl": produto.imgUrl,
-          "eFavorito": produto.eFavorito,
         },
       ),
     );
@@ -83,7 +97,6 @@ class ListaProdutos with ChangeNotifier {
       ingredientes: produto.ingredientes,
       preco: produto.preco,
       imgUrl: produto.imgUrl,
-      eFavorito: produto.eFavorito,
     ));
     notifyListeners();
   }
@@ -93,7 +106,8 @@ class ListaProdutos with ChangeNotifier {
 
     if (index >= 0) {
       await http.patch(
-        Uri.parse('${AppConstantes.PRODUTO_BASE_URL}/${produto.id}.json?auth=$_token'),
+        Uri.parse(
+            '${AppConstantes.PRODUTO_BASE_URL}/${produto.id}.json?auth=$_token'),
         body: jsonEncode(
           {
             "titulo": produto.titulo,
@@ -119,7 +133,8 @@ class ListaProdutos with ChangeNotifier {
       notifyListeners();
 
       final resposta = await http.delete(
-        Uri.parse('${AppConstantes.PRODUTO_BASE_URL}/${produto.id}.json?auth=$_token'),
+        Uri.parse(
+            '${AppConstantes.PRODUTO_BASE_URL}/${produto.id}.json?auth=$_token'),
       );
 
       if (resposta.statusCode >= 400) {

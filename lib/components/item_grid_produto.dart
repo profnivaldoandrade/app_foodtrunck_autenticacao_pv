@@ -24,7 +24,7 @@ class ItemGridProduto extends StatelessWidget {
           leading: Consumer<Produto>(
             builder: (ctx, produto, _) => IconButton(
               onPressed: () {
-                produto.alternarFavorito(autenticado.token ?? '');
+                produto.alternarFavorito(autenticado.token ?? '', autenticado.userId ?? '');
               },
               icon: Icon(
                   produto.eFavorito ? Icons.favorite : Icons.favorite_border),

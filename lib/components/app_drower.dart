@@ -1,5 +1,7 @@
+import 'package:app_foodtrunck/models/autenticacao.dart';
 import 'package:app_foodtrunck/utils/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -38,6 +40,16 @@ class AppDrawer extends StatelessWidget {
             onTap: () {
               Navigator.of(context).pushReplacementNamed(
                 AppRoutes.PRODUTOS,
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.exit_to_app),
+            title: const Text('Sair'),
+            onTap: () {
+              Provider.of<Autenticacao>(context, listen: false).logout();
+              Navigator.of(context).pushReplacementNamed(
+                AppRoutes.LOGIN_OU_HOME,
               );
             },
           ),

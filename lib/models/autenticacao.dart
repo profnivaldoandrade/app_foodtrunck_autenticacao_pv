@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:app_foodtrunck/execoes/execoes_autenticacao.dart';
 import 'package:flutter/material.dart';
@@ -6,8 +7,9 @@ import 'package:http/http.dart' as http;
 class Autenticacao with ChangeNotifier {
   String? _token;
   String? _email;
-  String? _uid;
+  String? _userId;
   DateTime? _expToken;
+  Timer? _logoutTimer;
 
   bool get estaAutenticado {
     final estaAutenticado = _expToken?.isAfter(DateTime.now()) ?? false;
@@ -22,8 +24,8 @@ class Autenticacao with ChangeNotifier {
     return estaAutenticado ? _email : null;
   }
 
-  String? get uid {
-    return estaAutenticado ? _uid : null;
+  String? get userId {
+    return estaAutenticado ? _userId : null;
   }
 
   Future<void> _autenticacao(
@@ -46,13 +48,12 @@ class Autenticacao with ChangeNotifier {
     } else {
       _token = body['idToken'];
       _email = body['email'];
-      _uid = body['localId'];
+      _userId = body['localId'];
 
       _expToken = DateTime.now().add(
-        Duration(
-          seconds: int.parse(body['expiresIn'])
-        ),
+        Duration(seconds: int.parse(body['expiresIn'])),
       );
+      _autoLogout();
       notifyListeners();
     }
   }
@@ -63,5 +64,23 @@ class Autenticacao with ChangeNotifier {
 
   Future<void> login(String email, String password) async {
     return _autenticacao(email, password, 'signInWithPassword');
+  }
+
+  void logout() {
+    _token = null;
+    _email = null;
+    _userId = null;
+    _expToken = null;
+    _limparLogoutTimer();
+    notifyListeners();
+  }
+  void _limparLogoutTimer(){
+    _logoutTimer?.cancel();
+    _logoutTimer = null;
+  }
+  void _autoLogout(){
+    _limparLogoutTimer();
+    final duracaoSessao = _expToken?.difference(DateTime.now()).inSeconds;
+    _logoutTimer = Timer(Duration(seconds: duracaoSessao ?? 0 ), logout);
   }
 }

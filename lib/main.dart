@@ -25,19 +25,21 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => Autenticacao()),
         ChangeNotifierProxyProvider<Autenticacao, ListaProdutos>(
-          create: (_) => ListaProdutos('', []),
+          create: (_) => ListaProdutos(),
           update: (cxt, aut, anterior) {
             return ListaProdutos(
               aut.token ?? '',
+              aut.userId ?? '',
               anterior?.items ?? [],
             );
           },
         ),
         ChangeNotifierProxyProvider<Autenticacao, FecharPedidoItens>(
-          create: (_) => FecharPedidoItens('', []),
+          create: (_) => FecharPedidoItens(),
           update: (ctx, aut, anterior) {
             return FecharPedidoItens(
               aut.token ?? '',
+              aut.userId ?? '',
               anterior?.items ?? [],
             );
           },

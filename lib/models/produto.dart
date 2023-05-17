@@ -27,11 +27,11 @@ class Produto with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> alternarFavorito(String token) async {
+  Future<void> alternarFavorito(String token, String userId) async {
     _alternarFavorito();
-    final resposta = await http.patch(
-      Uri.parse('${AppConstantes.PRODUTO_BASE_URL}/$id.json?auth=$token'),
-      body: jsonEncode({"eFavorito": eFavorito}),
+    final resposta = await http.put(
+      Uri.parse('${AppConstantes.USUARIO_FAVORITO_URL}/$userId/$id.json?auth=$token'),
+      body: jsonEncode(eFavorito),
     );
 
     if (resposta.statusCode >= 400) {

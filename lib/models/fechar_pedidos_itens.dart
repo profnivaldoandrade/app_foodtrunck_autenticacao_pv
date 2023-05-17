@@ -8,10 +8,15 @@ import 'package:http/http.dart' as http;
 
 class FecharPedidoItens with ChangeNotifier {
   final String _token;
+  final String _userId;
 
   List<FecharPedido> _items = [];
 
-  FecharPedidoItens(this._token, this._items);
+  FecharPedidoItens([
+    this._token = '',
+    this._userId = '',
+    this._items = const [],
+  ]);
 
   List<FecharPedido> get items {
     return [..._items];
@@ -24,7 +29,7 @@ class FecharPedidoItens with ChangeNotifier {
   Future<void> carregarPedidosFechados() async {
     List<FecharPedido> items = [];
     final resposta = await http
-        .get(Uri.parse('${AppConstantes.PEDIDO_BASE_URL}.json?auth=$_token'));
+        .get(Uri.parse('${AppConstantes.PEDIDO_BASE_URL}/$_userId.json?auth=$_token'));
     if (resposta.body == 'null') return;
     Map<String, dynamic> dados = jsonDecode(resposta.body);
     dados.forEach((pedidoId, predidoDados) {
@@ -52,7 +57,7 @@ class FecharPedidoItens with ChangeNotifier {
   Future<void> addFecharPedido(Pedido pedido) async {
     final data = DateTime.now();
     final resposta = await http.post(
-      Uri.parse('${AppConstantes.PEDIDO_BASE_URL}.json?auth=$_token'),
+      Uri.parse('${AppConstantes.PEDIDO_BASE_URL}/$_userId.json?auth=$_token'),
       body: jsonEncode(
         {
           'total': pedido.totalItens,

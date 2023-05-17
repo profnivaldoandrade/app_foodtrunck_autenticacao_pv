@@ -1,5 +1,8 @@
 class AppConstantes {
   // ignore: constant_identifier_names
+  static const USUARIO_FAVORITO_URL =
+      'https://foodtrunck-c34b6-default-rtdb.firebaseio.com/usuarioFavorito';
+  // ignore: constant_identifier_names
   static const PRODUTO_BASE_URL =
       'https://foodtrunck-c34b6-default-rtdb.firebaseio.com/produtos';
   // ignore: constant_identifier_names
