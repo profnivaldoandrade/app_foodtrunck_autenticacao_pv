@@ -7,7 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class FecharPedidoItens with ChangeNotifier {
-  final List<FecharPedido> _items = [];
+  final String _token;
+
+  List<FecharPedido> _items = [];
+
+  FecharPedidoItens(this._token, this._items);
 
   List<FecharPedido> get items {
     return [..._items];
@@ -18,13 +22,13 @@ class FecharPedidoItens with ChangeNotifier {
   }
 
   Future<void> carregarPedidosFechados() async {
-    _items.clear();
-    final resposta =
-        await http.get(Uri.parse('${AppConstantes.PEDIDO_BASE_URL}.json'));
+    List<FecharPedido> items = [];
+    final resposta = await http
+        .get(Uri.parse('${AppConstantes.PEDIDO_BASE_URL}.json?auth=$_token'));
     if (resposta.body == 'null') return;
     Map<String, dynamic> dados = jsonDecode(resposta.body);
     dados.forEach((pedidoId, predidoDados) {
-      _items.add(
+      items.add(
         FecharPedido(
           id: pedidoId,
           date: DateTime.parse(predidoDados['data']),
@@ -41,13 +45,14 @@ class FecharPedidoItens with ChangeNotifier {
         ),
       );
     });
+    _items = items.reversed.toList();
     notifyListeners();
   }
 
   Future<void> addFecharPedido(Pedido pedido) async {
     final data = DateTime.now();
     final resposta = await http.post(
-      Uri.parse('${AppConstantes.PEDIDO_BASE_URL}.json'),
+      Uri.parse('${AppConstantes.PEDIDO_BASE_URL}.json?auth=$_token'),
       body: jsonEncode(
         {
           'total': pedido.totalItens,

@@ -1,3 +1,4 @@
+import 'package:app_foodtrunck/models/autenticacao.dart';
 import 'package:app_foodtrunck/models/pedido.dart';
 import 'package:app_foodtrunck/models/produto.dart';
 import 'package:app_foodtrunck/utils/app_routes.dart';
@@ -10,6 +11,7 @@ class ItemGridProduto extends StatelessWidget {
   Widget build(BuildContext context) {
     final produto = Provider.of<Produto>(context, listen: false);
     final pedido = Provider.of<Pedido>(context, listen: false);
+    final autenticado = Provider.of<Autenticacao>(context, listen: false);
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: GridTile(
@@ -22,7 +24,7 @@ class ItemGridProduto extends StatelessWidget {
           leading: Consumer<Produto>(
             builder: (ctx, produto, _) => IconButton(
               onPressed: () {
-                produto.alternarFavorito();
+                produto.alternarFavorito(autenticado.token ?? '');
               },
               icon: Icon(
                   produto.eFavorito ? Icons.favorite : Icons.favorite_border),

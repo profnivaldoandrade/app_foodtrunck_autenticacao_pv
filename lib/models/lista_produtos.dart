@@ -93,7 +93,7 @@ class ListaProdutos with ChangeNotifier {
 
     if (index >= 0) {
       await http.patch(
-        Uri.parse('${AppConstantes.PRODUTO_BASE_URL}/${produto.id}.json'),
+        Uri.parse('${AppConstantes.PRODUTO_BASE_URL}/${produto.id}.json?auth=$_token'),
         body: jsonEncode(
           {
             "titulo": produto.titulo,
@@ -119,7 +119,7 @@ class ListaProdutos with ChangeNotifier {
       notifyListeners();
 
       final resposta = await http.delete(
-        Uri.parse('${AppConstantes.PRODUTO_BASE_URL}/${produto.id}.json'),
+        Uri.parse('${AppConstantes.PRODUTO_BASE_URL}/${produto.id}.json?auth=$_token'),
       );
 
       if (resposta.statusCode >= 400) {

@@ -5,7 +5,6 @@ import 'package:app_foodtrunck/models/lista_produtos.dart';
 import 'package:app_foodtrunck/utils/app_routes.dart';
 import 'package:app_foodtrunck/views/autenticacao_ou_home_view.dart';
 import 'package:app_foodtrunck/views/form_produto_view.dart';
-import 'package:app_foodtrunck/views/login_view.dart';
 import 'package:app_foodtrunck/views/pedido_view.dart';
 import 'package:app_foodtrunck/views/fechar_pedido_view.dart';
 import 'package:app_foodtrunck/views/produto_detalhe_view.dart';
@@ -26,13 +25,24 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => Autenticacao()),
         ChangeNotifierProxyProvider<Autenticacao, ListaProdutos>(
-          create: (_) => ListaProdutos('',[]),
+          create: (_) => ListaProdutos('', []),
           update: (cxt, aut, anterior) {
-            return ListaProdutos(aut.token ?? '', anterior?.items ?? []);
+            return ListaProdutos(
+              aut.token ?? '',
+              anterior?.items ?? [],
+            );
+          },
+        ),
+        ChangeNotifierProxyProvider<Autenticacao, FecharPedidoItens>(
+          create: (_) => FecharPedidoItens('', []),
+          update: (ctx, aut, anterior) {
+            return FecharPedidoItens(
+              aut.token ?? '',
+              anterior?.items ?? [],
+            );
           },
         ),
         ChangeNotifierProvider(create: (_) => Pedido()),
-        ChangeNotifierProvider(create: (_) => FecharPedidoItens()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
