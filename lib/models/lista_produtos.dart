@@ -67,7 +67,6 @@ class ListaProdutos with ChangeNotifier {
       preco: dados['preco'] as double,
       imgUrl: dados['imgUrl'] as String,
     );
-
     if (temId) {
       return atualizarProduto(produto);
     } else {
@@ -77,7 +76,7 @@ class ListaProdutos with ChangeNotifier {
 
   Future<void> addProduto(Produto produto) async {
     final resposta = await http.post(
-      Uri.parse('${AppConstantes.PRODUTO_BASE_URL}.json'),
+      Uri.parse('${AppConstantes.PRODUTO_BASE_URL}.json?auth=$_token'),
       body: jsonEncode(
         {
           "titulo": produto.titulo,
